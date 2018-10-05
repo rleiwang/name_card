@@ -1,0 +1,62 @@
+package main
+
+import (
+	"flag"
+	"log"
+	"net/http"
+
+	rice "github.com/GeertJohan/go.rice"
+)
+
+var addr = flag.String("addr", ":8080", "http service address")
+
+// NameList name list
+type NameList struct {
+	// Id id
+	ID uint `json:"id"`
+	// ChineseName name
+	ChineseName string `json:"cname"`
+
+	// first name
+	First string `json:"first"`
+
+	// last name
+	Family string `json:"family"`
+
+	// Absent absent
+	Absent bool `json:"absent"`
+}
+
+// Message message
+type Message struct {
+	Type string     `json:"type"`
+	List []NameList `json:"list"`
+}
+
+type NameLists struct {
+	lists []NameList
+}
+
+func main() {
+	flag.Parse()
+	b := newBroker()
+	defer b.stop()
+	go b.run()
+
+	l := NameLists{lists: []NameList{}}
+
+	http.Handle("/", http.FileServer(rice.MustFindBox("build").HTTPBox()))
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(b, &l, w, r)
+	})
+	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+		handlUpload(&l, w, r)
+	})
+	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
+		handlDownload(w, r)
+	})
+	err := http.ListenAndServe(*addr, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}

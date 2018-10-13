@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 
 import postal from 'postal';
 
+import Button from '@material-ui/core/Button';
+
 class Admin extends React.Component {
     constructor(props, context) {
         super(props, context);
@@ -12,20 +14,16 @@ class Admin extends React.Component {
     }
 
     render() {
-        const { data, classes } = this.props;
-
-        return (<div className="previewComponent">
-            <form onSubmit={(e) => this._handleSubmit(e)}>
-                <input className="fileInput"
-                    type="file"
-                    onChange={(e) => this._handleFileSelected(e)} />
-                <button className="submitButton"
-                    type="submit"
-                    onClick={(e) => this._handleSubmit(e)}>Upload</button>
-            </form>
-
-            <a href={'http://' + window.location.hostname + ":8080/download"} download="report.csv">download report</a>
-        </div>);
+        return <div className="previewComponent">
+            <Button variant="contained" href={'http://' + window.location.hostname + ":8080/download"} download>Download Report</Button>
+            <br />
+            <input className={{ display: 'none' }} id="flat-button-file" multiple type="file" onChange={this._handleFileSelected.bind(this)} />
+            <label htmlFor="flat-button-file">
+                <Button variant="contained" component="span" onClick={this._handleSubmit.bind(this)}>Upload</Button>
+            </label>
+            <br />
+            <Button variant="outlined" color="secondary" onClick={this._handleReset.bind(this)}>Reset</Button>
+        </div>;
     }
 
     _handleSubmit(e) {
@@ -51,6 +49,21 @@ class Admin extends React.Component {
     _handleFileSelected(e) {
         e.preventDefault();
         this.setState({ file: e.target.files[0] });
+    }
+
+    _handleReset(e) {
+        e.preventDefault();
+
+        fetch('http://' + window.location.hostname + ':8080/reset', { method: 'GET', })
+            .then(response => {
+                if (response.status == 200) {
+                    postal.publish({
+                        channel: "event",
+                        topic: "reconn",
+                        data: {}
+                    });
+                }
+            });
     }
 }
 

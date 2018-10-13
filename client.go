@@ -36,7 +36,8 @@ var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
 	mutex   = &sync.Mutex{}
-	logfile string // = createUpdateLog()
+	logfile string
+	logdate string
 )
 
 var upgrader = websocket.Upgrader{
@@ -60,7 +61,8 @@ type client struct {
 }
 
 func createUpdateLog() string {
-	fname := "update_" + time.Now().Local().Format("2006-01-02") + ".log"
+	logdate = time.Now().Local().Format("2006-01-02")
+	fname := "update_" + logdate + ".log"
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile(fname, os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
@@ -211,7 +213,7 @@ func serveWs(b *broker, l *NameLists, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlUpload(l *NameLists, w http.ResponseWriter, r *http.Request) {
+func handleUpload(l *NameLists, w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
 		fmt.Printf("%v", err)
@@ -224,6 +226,11 @@ func handlUpload(l *NameLists, w http.ResponseWriter, r *http.Request) {
 	l.lists = readFiles(file)
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	logfile = createUpdateLog()
+}
+
+func handleReset(w http.ResponseWriter, r *http.Request) {
+	logfile = createUpdateLog()
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 }
 
 func readFiles(f io.Reader) []NameList {
@@ -241,12 +248,12 @@ func readFiles(f io.Reader) []NameList {
 	return names
 }
 
-func handlDownload(w http.ResponseWriter, r *http.Request) {
+func handleDownload(w http.ResponseWriter, r *http.Request) {
 	modtime := time.Now()
 	content := bytes.NewReader(downloadLog())
 
 	// ServeContent uses the name for mime detection
-	const name = "report.csv"
+	name := "report_" + logdate + ".csv"
 
 	// tell the browser the returned content should be downloaded
 	w.Header().Add("Content-Disposition", "attachment;filename="+name)
@@ -259,6 +266,12 @@ func downloadLog() []byte {
 	mutex.Lock()
 	defer mutex.Unlock()
 
+	fmt.Printf("logfile is %v \n", logfile)
+	if logfile == "'" {
+		return []byte{}
+	} else if _, err := os.Stat(logfile); err != nil && os.IsNotExist(err) {
+		return []byte{}
+	}
 	inFile, _ := os.Open(logfile)
 	defer inFile.Close()
 	scanner := bufio.NewScanner(inFile)

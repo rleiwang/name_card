@@ -50,10 +50,13 @@ func main() {
 		serveWs(b, &l, w, r)
 	})
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
-		handlUpload(&l, w, r)
+		handleUpload(&l, w, r)
+	})
+	http.HandleFunc("/reset", func(w http.ResponseWriter, r *http.Request) {
+		handleReset(w, r)
 	})
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-		handlDownload(w, r)
+		handleDownload(w, r)
 	})
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {

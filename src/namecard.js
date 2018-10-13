@@ -45,7 +45,6 @@ class NameCard extends React.Component {
 NameCard.propTypes = {
     classes: PropTypes.object.isRequired,
     data: PropTypes.array.isRequired,
-    onSelectAllClick: PropTypes.func.isRequired,
     disabled: PropTypes.bool.isRequired,
 };
 

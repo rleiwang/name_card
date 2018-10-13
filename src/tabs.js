@@ -17,6 +17,12 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
+
 import Disconnected from '@material-ui/icons/PortableWifiOff';
 import Connected from '@material-ui/icons/Wifi';
 
@@ -183,9 +189,33 @@ class SimpleTabs extends React.Component {
             </Menu>
           </Toolbar>
         </AppBar>
-        {value === 0 && <TabContainer><ScrollPaper data={this.state.data} cellHeight={this._cellHeight} filter={d => this.state.filter(d)} showAll={true} /></TabContainer>}
-        {value === 1 && <TabContainer><ScrollPaper data={this.state.data} cellHeight={this._cellHeight} filter={d => !d.absent && this.state.filter(d)} showAll={false} /></TabContainer>}
+        {value === 0 &&
+          <TabContainer>
+            <ScrollPaper data={this.state.data.filter(d => this.state.filter(d)).sort((a, b) => a.family.localeCompare(b.family))}
+              cellHeight={this._cellHeight} showAll={true} />
+          </TabContainer>
+        }
+        {value === 1 &&
+          <TabContainer>
+            <ScrollPaper data={this.state.data.filter(d => !d.absent && this.state.filter(d)).sort((a, b) => a.family.localeCompare(b.family))}
+              cellHeight={this._cellHeight} showAll={false} />
+          </TabContainer>
+        }
         {value === 2 && <TabContainer><Admin data={this.state.data} cellHeight={this._cellHeight} /></TabContainer>}
+        {this.state.connected ? null :
+          <Dialog open={true}
+            TransitionComponent={props => <Slide direction="up" {...props} />}
+            keepMounted={false}
+            aria-labelledby="alert-dialog-slide-title"
+            aria-describedby="alert-dialog-slide-description"
+          >
+            <DialogTitle id="alert-dialog-slide-title">
+              {"Connection lost, reconnect?"}
+            </DialogTitle>
+            <DialogActions>
+              <Button onClick={this.handleConnectionClick} color="primary">Connect</Button>
+            </DialogActions>
+          </Dialog>}
       </div>
     );
   }

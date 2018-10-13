@@ -38,4 +38,6 @@
   grid-template-rows: repeat(var(--af), 1fr);
   grid-auto-flow: column;
   overflow-x: scroll;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }

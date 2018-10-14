@@ -12,8 +12,14 @@ var addr = flag.String("addr", ":8080", "http service address")
 
 // NameList name list
 type NameList struct {
-	// Id id
-	ID uint `json:"id"`
+	// Id index id
+	ID int `json:"id"`
+
+	UID int `json:"uid"`
+
+	// FID family id
+	FID int `json:"fid"`
+
 	// ChineseName name
 	ChineseName string `json:"cname"`
 
@@ -43,7 +49,7 @@ func main() {
 	defer b.stop()
 	go b.run()
 
-	l := NameLists{lists: []NameList{}}
+	l := NameLists{lists: loadFileIfExists()}
 
 	http.Handle("/", http.FileServer(rice.MustFindBox("build").HTTPBox()))
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

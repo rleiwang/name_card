@@ -36,9 +36,8 @@ class SingleLineGridList extends React.Component {
       <div className="wrapper">
         <style>{`:root { --af: ${this.state.rows}; }`}</style>
         {this.props.data.map(nc =>
-          <NameCard key={nc.id} data={nc} filter={this.props.filter} rowsPerPage={this.state.rows}
-            disabled={this.props.showAll && !nc.absent} />)
-        }
+          <NameCard key={nc.id} data={nc} rowsPerPage={this.state.rows} disabled={this.props.showAll && !nc.absent} />
+        )}
       </div>
     );
   }

@@ -191,13 +191,13 @@ class SimpleTabs extends React.Component {
         </AppBar>
         {value === 0 &&
           <TabContainer>
-            <ScrollPaper data={this.state.data.filter(d => this.state.filter(d)).sort((a, b) => a.family.localeCompare(b.family))}
+            <ScrollPaper data={this.state.data.filter(d => this.state.filter(d))}
               cellHeight={this._cellHeight} showAll={true} />
           </TabContainer>
         }
         {value === 1 &&
           <TabContainer>
-            <ScrollPaper data={this.state.data.filter(d => !d.absent && this.state.filter(d)).sort((a, b) => a.family.localeCompare(b.family))}
+            <ScrollPaper data={this.state.data.filter(d => !d.absent && this.state.filter(d))}
               cellHeight={this._cellHeight} showAll={false} />
           </TabContainer>
         }

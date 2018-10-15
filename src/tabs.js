@@ -16,6 +16,8 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import green from '@material-ui/core/colors/green';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -56,16 +58,15 @@ const styles = theme => ({
     height: 20,
     color: deepPurple[500],
   },
+  buttonConnecting: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 });
-
-function loadList() {
-  let l = sessionStorage.getItem('list');
-  if (l) {
-    return JSON.stringify(l)
-  }
-
-  return [];
-}
 
 const options = ['Admin'];
 
@@ -75,6 +76,7 @@ class SimpleTabs extends React.Component {
     quicklist: [],
     value: 0,
     connected: false,
+    connecting: false,
     filter: n => true,
     anchorEl: null,
     expand: true,
@@ -87,6 +89,7 @@ class SimpleTabs extends React.Component {
   };
 
   handleConnectionClick = (event) => {
+    this.setState({ connecting: true })
     if (!this.state.connected) {
       postal.publish({
         channel: "event",
@@ -115,7 +118,7 @@ class SimpleTabs extends React.Component {
     this._subscriptions = [postal.subscribe({
       channel: "event",
       topic: "conn",
-      callback: (data, envelope) => this.setState({ connected: data.connected })
+      callback: (data, envelope) => this.setState({ connected: data.connected, connecting: false })
     }), postal.subscribe({
       channel: "event",
       topic: "recv",
@@ -132,7 +135,7 @@ class SimpleTabs extends React.Component {
           }
           this.setState({ data: data.list, quicklist: this._ql, expand: false });
         } else if (data.type === 'Update') {
-          data.list.forEach(e => this.state.data[e.id].absent = e.absent);
+          data.list.forEach(e => this.state.data[e.idx].absent = e.absent);
           this.setState(this.state)
         }
       }
@@ -213,7 +216,8 @@ class SimpleTabs extends React.Component {
               {"Connection lost, reconnect?"}
             </DialogTitle>
             <DialogActions>
-              <Button onClick={this.handleConnectionClick} color="primary">Connect</Button>
+              <Button onClick={this.handleConnectionClick} color="primary" disabled={this.state.connecting}>Connect</Button>
+              {this.state.connecting && <CircularProgress size={24} className={classes.buttonConnecting} />}
             </DialogActions>
           </Dialog>}
       </div>

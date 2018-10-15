@@ -40,6 +40,7 @@ var (
 	mutex   = &sync.Mutex{}
 	logdate string
 	logfile = createUpdateLog(false)
+	fname   = "attendance.csv"
 )
 
 var upgrader = websocket.Upgrader{
@@ -241,60 +242,71 @@ func handleReset(w http.ResponseWriter, r *http.Request) {
 }
 
 func readFiles(f io.Reader) []NameList {
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
-
-	of, err := os.OpenFile("attendance.csv", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
+	of, err := os.OpenFile(fname, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer of.Close()
 
+	return parseToNameLists(f, of)
+}
+
+func parseToNameLists(r io.Reader, of *os.File) []NameList {
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
 	names := []NameList{}
-	// ID,Family ID,Chinese Name,Last Name,First Name
+
+	// Family Name,Family ID,ID,Chinese Name,Last Name,First Name
 	scanner.Scan()
-	for scanner.Scan() {
+	if of != nil {
 		fmt.Fprintln(of, scanner.Text())
-		names = append(names, *parseToNameList(scanner.Text()))
 	}
 
-	sort.Slice(names, func(i, j int) bool { return names[i].FID > names[j].FID })
+	for scanner.Scan() {
+		t := scanner.Text()
+		if of != nil {
+			fmt.Fprintln(of, t)
+		}
+		s := strings.Split(t, ",")
+		fid, _ := strconv.Atoi(s[1])
+		uid, _ := strconv.Atoi(s[2])
+		names = append(names, NameList{UID: uid, FID: fid, ChineseName: s[3], Family: s[0], Last: s[4], First: s[5], Absent: true})
+	}
+	sort.Slice(names, func(i, j int) bool {
+		v := strings.Compare(names[i].Family, names[j].Family)
+		if v > 0 {
+			return false
+		} else if v < 0 {
+			return true
+		}
+		v = names[i].FID - names[j].FID
+		if v > 0 {
+			return true
+		} else if v < 0 {
+			return false
+		}
+		return names[i].UID < names[j].UID
+	})
+	// jsx uses array index as ID
 	for i := 0; i < len(names); i++ {
-		names[i].ID = i
+		names[i].IDX = i
 	}
 	return names
 }
 
-func parseToNameList(t string) *NameList {
-	s := strings.Split(t, ",")
-	uid, _ := strconv.Atoi(s[0])
-	fid, _ := strconv.Atoi(s[1])
-	return &NameList{UID: uid, FID: fid, ChineseName: s[2], Family: s[3], First: s[4], Absent: true}
-}
-
 func loadFileIfExists() []NameList {
-	names := []NameList{}
-	if _, err := os.Stat("attendance.csv"); err != nil && os.IsNotExist(err) {
-		return names
+	if _, err := os.Stat(fname); err != nil && os.IsNotExist(err) {
+		return []NameList{}
 	}
 
-	f, err := os.OpenFile("attendance.csv", os.O_RDONLY, 0644)
+	f, err := os.OpenFile(fname, os.O_RDONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
 
-	scanner.Scan()
-	for scanner.Scan() {
-		names = append(names, *parseToNameList(scanner.Text()))
-	}
-	sort.Slice(names, func(i, j int) bool { return names[i].FID > names[j].FID })
-	for i := 0; i < len(names); i++ {
-		names[i].ID = i
-	}
-	return names
+	return parseToNameLists(f, nil)
 }
 
 func handleDownload(w http.ResponseWriter, r *http.Request) {
@@ -332,16 +344,16 @@ func downloadLog() []byte {
 		if err == nil {
 			for _, nl := range single {
 				if nl.Absent {
-					delete(attendees, nl.ID)
+					delete(attendees, nl.UID)
 				} else {
-					attendees[nl.ID] = nl
+					attendees[nl.UID] = nl
 				}
 			}
 		}
 	}
 	b := []byte{}
 	for _, v := range attendees {
-		b = append(b, []byte(fmt.Sprintf("%d,%s,%s,%s\n", v.UID, v.ChineseName, v.First, v.Family))...)
+		b = append(b, []byte(fmt.Sprintf("%d,%d,%s,%s,%s\n", v.UID, v.FID, v.ChineseName, v.First, v.Last))...)
 	}
 
 	return b

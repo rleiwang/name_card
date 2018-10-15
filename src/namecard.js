@@ -30,7 +30,7 @@ class NameCard extends React.Component {
                 {data.first}
             </Button>
             <Button size='small' className={classes.button} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
-                {data.family}
+                {data.last}
             </Button>
         </Paper>);
     }

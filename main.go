@@ -13,12 +13,15 @@ var addr = flag.String("addr", ":8080", "http service address")
 // NameList name list
 type NameList struct {
 	// Id index id
-	ID int `json:"id"`
+	IDX int `json:"idx"`
 
 	UID int `json:"uid"`
 
 	// FID family id
 	FID int `json:"fid"`
+
+	// Family name
+	Family string `json:"family"`
 
 	// ChineseName name
 	ChineseName string `json:"cname"`
@@ -27,7 +30,7 @@ type NameList struct {
 	First string `json:"first"`
 
 	// last name
-	Family string `json:"family"`
+	Last string `json:"last"`
 
 	// Absent absent
 	Absent bool `json:"absent"`

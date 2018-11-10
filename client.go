@@ -351,10 +351,12 @@ func downloadLog() []byte {
 			}
 		}
 	}
-	b := []byte{}
+	var buf bytes.Buffer
+	w := bufio.NewWriter(&buf)
 	for _, v := range attendees {
-		b = append(b, []byte(fmt.Sprintf("%d,%d,%s,%s,%s\n", v.UID, v.FID, v.ChineseName, v.First, v.Last))...)
+		w.WriteString(fmt.Sprintln(v.UID))
 	}
+	w.Flush()
 
-	return b
+	return buf.Bytes()
 }

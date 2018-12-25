@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,7 +41,6 @@ var (
 	mutex   = &sync.Mutex{}
 	logdate string
 	logfile = createUpdateLog(false)
-	fname   = "attendance.csv"
 )
 
 var upgrader = websocket.Upgrader{
@@ -65,21 +65,21 @@ type client struct {
 
 func createUpdateLog(reset bool) string {
 	logdate = time.Now().Local().Format("2006-01-02")
-	fname := "update_" + logdate + ".log"
+	logfname := path.Join(*dir, "update_"+logdate+".log")
 	// If the file doesn't exist, create it, or append to the file
 
 	flags := os.O_CREATE
 	if reset {
 		flags |= os.O_TRUNC
 	}
-	f, err := os.OpenFile(fname, flags, 0644)
+	f, err := os.OpenFile(logfname, flags, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err := f.Close(); err != nil {
 		log.Fatal(err)
 	}
-	return fname
+	return logfname
 }
 
 func appendLog(msg []byte) {
@@ -242,7 +242,7 @@ func handleReset(w http.ResponseWriter, r *http.Request) {
 }
 
 func readFiles(f io.Reader) []NameList {
-	of, err := os.OpenFile(fname, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
+	of, err := os.OpenFile(*fname, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -296,11 +296,11 @@ func parseToNameLists(r io.Reader, of *os.File) []NameList {
 }
 
 func loadFileIfExists() []NameList {
-	if _, err := os.Stat(fname); err != nil && os.IsNotExist(err) {
+	if _, err := os.Stat(*fname); err != nil && os.IsNotExist(err) {
 		return []NameList{}
 	}
 
-	f, err := os.OpenFile(fname, os.O_RDONLY, 0644)
+	f, err := os.OpenFile(*fname, os.O_RDONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}

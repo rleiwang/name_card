@@ -2,13 +2,17 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"path"
 
 	rice "github.com/GeertJohan/go.rice"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
+var dir = flag.String("dir", "./", "current working dir")
+var fname = flag.String("file", "attendance.csv", "attendance file name")
 
 // NameList name list
 type NameList struct {
@@ -48,6 +52,8 @@ type NameLists struct {
 
 func main() {
 	flag.Parse()
+	*fname = path.Join(*dir, *fname)
+	fmt.Printf("reading file %v\n", *fname)
 	b := newBroker()
 	defer b.stop()
 	go b.run()

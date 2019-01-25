@@ -40,6 +40,7 @@ var (
 	space   = []byte{' '}
 	mutex   = &sync.Mutex{}
 	logdate string
+	recdate string
 	logfile = createUpdateLog(false)
 )
 
@@ -65,6 +66,7 @@ type client struct {
 
 func createUpdateLog(reset bool) string {
 	logdate = time.Now().Local().Format("2006-01-02")
+	recdate = time.Now().Local().Format("01/02/2006")
 	logfname := path.Join(*dir, "update_"+logdate+".log")
 	// If the file doesn't exist, create it, or append to the file
 
@@ -354,7 +356,7 @@ func downloadLog() []byte {
 	var buf bytes.Buffer
 	w := bufio.NewWriter(&buf)
 	for _, v := range attendees {
-		w.WriteString(fmt.Sprintln(v.UID))
+		w.WriteString(fmt.Sprintln(v.UID, ",", recdate))
 	}
 	w.Flush()
 

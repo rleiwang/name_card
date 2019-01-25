@@ -7,6 +7,7 @@ import postal from 'postal';
 
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
+import Badge from '@material-ui/core/Badge';
 import deepPurple from '@material-ui/core/colors/deepPurple';
 import Toolbar from '@material-ui/core/Toolbar';
 import Tabs from '@material-ui/core/Tabs';
@@ -66,6 +67,9 @@ const styles = theme => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  padding: {
+    padding: `0 ${theme.spacing.unit * 1}px`,
+  },
 });
 
 const options = ['Admin'];
@@ -82,7 +86,7 @@ class SimpleTabs extends React.Component {
     expand: true,
   };
 
-  _cellHeight = 35;
+  _cellHeight = 31;
 
   handleChange = (event, value) => {
     this.setState({ value });
@@ -146,13 +150,18 @@ class SimpleTabs extends React.Component {
     const { classes } = this.props;
     const { value, anchorEl } = this.state;
 
+    let cnt = this.state.data.filter(d => !d.absent).length
+
     return (
       <div className={classes.root}>
         <AppBar position="static">
           <Toolbar>
             <Tabs value={value} onChange={this.handleChange} style={{ flex: 1 }}>
               <Tab label="聚會會眾" />
-              <Tab label="簽到" />
+              <Tab label={
+                <Badge className={classes.padding} badgeContent={cnt} color="secondary">
+                  簽到
+              </Badge>} />
             </Tabs>
             <div ref={this._refs.bind(this)} className={classes.row}>
               <Avatar className={classes.purpleAvatar} onClick={this._click.bind(this, '')}>{this.state.expand ? '<' : '>'}</Avatar>

@@ -10,11 +10,16 @@ import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
     root: {
-        width: '35ch',
+        width: '25ch',
         justify: 'center',
     },
+    smallButton: {
+        margin: -10,
+        fontSize: '0.1ch'
+    },
     button: {
-        margin: -5,
+        margin: -10,
+        fontSize: '3ch'
     }
 });
 
@@ -23,14 +28,11 @@ class NameCard extends React.Component {
         const { data, classes, disabled } = this.props;
         const bc = data.absent ? { 'backgroundColor': '#ffd699' } : { backgroundColor: '#99c2ff' };
         return (<Paper className={classes.root} style={bc}>
-            <Button size='small' onClick={this.onSelect.bind(this, data)} disabled={disabled}>
+            <Button className={classes.button} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
                 {data.cname}
             </Button>
-            <Button size='small' className={classes.button} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
-                {data.first}
-            </Button>
-            <Button size='small' className={classes.button} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
-                {data.last}
+            <Button size='small' className={classes.smallButton} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
+                {data.first + "," + data.last}
             </Button>
         </Paper>);
     }

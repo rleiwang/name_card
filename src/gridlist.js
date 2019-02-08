@@ -7,6 +7,7 @@ class SingleLineGridList extends React.Component {
   constructor(props, context) {
     super(props, context)
     this.state = { width: 0, height: 0, rows: 0 };
+    this.divref = React.createRef()
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
   }
 
@@ -20,10 +21,20 @@ class SingleLineGridList extends React.Component {
   }
 
   updateWindowDimensions() {
+    let nrows = 0
+    if (this.divref.current) {
+      let computed = window.getComputedStyle(this.divref.current, null).getPropertyValue("line-height");
+      const height = Number(computed.slice(0, -2)) * 1.8
+      nrows = Math.floor((window.innerHeight - height - 1) / height)
+    }
+    if (nrows === 0) {
+      nrows = Math.floor((window.innerHeight - this.props.cellHeight - 1) / this.props.cellHeight)
+    }
+
     this.setState({
       width: window.innerWidth,
       height: window.innerHeight,
-      rows: Math.floor((window.innerHeight - this.props.cellHeight - 1) / this.props.cellHeight)
+      rows: nrows
     });
   }
 
@@ -33,7 +44,7 @@ class SingleLineGridList extends React.Component {
     }
 
     return (
-      <div className="wrapper">
+      <div ref={this.divref} className="wrapper">
         <style>{`:root { --af: ${this.state.rows}; }`}</style>
         {this.props.data.map(nc =>
           <NameCard key={nc.id} data={nc} rowsPerPage={this.state.rows} disabled={this.props.showAll && !nc.absent} />

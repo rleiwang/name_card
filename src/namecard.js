@@ -15,7 +15,7 @@ const styles = theme => ({
     },
     smallButton: {
         margin: -10,
-        fontSize: '0.1ch'
+        fontSize: '1ch'
     },
     button: {
         margin: -10,

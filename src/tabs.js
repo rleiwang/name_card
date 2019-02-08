@@ -52,6 +52,7 @@ const styles = theme => ({
   row: {
     display: 'flex',
     justifyContent: 'center',
+    fontSize: '1ch',
   },
   purpleAvatar: {
     margin: 2,
@@ -75,18 +76,22 @@ const styles = theme => ({
 const options = ['Admin'];
 
 class SimpleTabs extends React.Component {
-  state = {
-    data: [],
-    quicklist: [],
-    value: 0,
-    connected: false,
-    connecting: false,
-    filter: n => true,
-    anchorEl: null,
-    expand: true,
-  };
+  constructor(props) {
+    super(props);
+    this.divref = React.createRef()
 
-  _cellHeight = 31;
+    this.state = {
+      data: [],
+      quicklist: [],
+      value: 0,
+      connected: false,
+      connecting: false,
+      filter: n => true,
+      anchorEl: null,
+      expand: true,
+      cellHeight: 48,
+    };
+  }
 
   handleChange = (event, value) => {
     this.setState({ value });
@@ -144,6 +149,9 @@ class SimpleTabs extends React.Component {
         }
       }
     })];
+
+    const fs = window.getComputedStyle(this.divref.current, null).getPropertyValue("font-size");
+    this.setState({cellHeight: Number(fs.slice(0, -2)) * 4})
   }
 
   render() {
@@ -163,7 +171,7 @@ class SimpleTabs extends React.Component {
                   簽到
               </Badge>} />
             </Tabs>
-            <div ref={this._refs.bind(this)} className={classes.row}>
+            <div ref={this.divref} className={classes.row}>
               <Avatar className={classes.purpleAvatar} onClick={this._click.bind(this, '')}>{this.state.expand ? '<' : '>'}</Avatar>
               {
                 this.state.quicklist.map((a, i) =>
@@ -204,16 +212,16 @@ class SimpleTabs extends React.Component {
         {value === 0 &&
           <TabContainer>
             <ScrollPaper data={this.state.data.filter(d => this.state.filter(d))}
-              cellHeight={this._cellHeight} showAll={true} />
+              cellHeight={this.state.cellHeight} showAll={true} />
           </TabContainer>
         }
         {value === 1 &&
           <TabContainer>
             <ScrollPaper data={this.state.data.filter(d => !d.absent && this.state.filter(d))}
-              cellHeight={this._cellHeight} showAll={false} />
+              cellHeight={this.state.cellHeight} showAll={false} />
           </TabContainer>
         }
-        {value === 2 && <TabContainer><Admin data={this.state.data} cellHeight={this._cellHeight} /></TabContainer>}
+        {value === 2 && <TabContainer><Admin data={this.state.data} cellHeight={this.state.cellHeight} /></TabContainer>}
         {this.state.connected ? null :
           <Dialog open={true}
             TransitionComponent={props => <Slide direction="up" {...props} />}
@@ -238,12 +246,6 @@ class SimpleTabs extends React.Component {
       this.setState({ filter: d => d.family && d.family.startsWith(a) });
     } else {
       this.setState({ filter: d => true, expand: !this.state.expand, quicklist: this.state.expand ? this._ql : [] });
-    }
-  }
-
-  _refs(elem) {
-    if (elem) {
-      this._cellHeight = Math.ceil(elem.clientHeight * 1.5);
     }
   }
 }

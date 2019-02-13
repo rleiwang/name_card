@@ -10,16 +10,23 @@ import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
     root: {
-        width: '25ch',
+        width: '20ch',
+        display: 'flex',
+        flexDirection: 'column',
         justify: 'center',
+        alignItems: 'center',
     },
     smallButton: {
         margin: -10,
-        fontSize: '1ch'
+        fontSize: '1.2ch',
+        justify: 'center',
+        alignItems: 'center',
     },
     button: {
         margin: -10,
-        fontSize: '3ch'
+        fontSize: '4.6ch',
+        justify: 'center',
+        alignItems: 'center',
     }
 });
 

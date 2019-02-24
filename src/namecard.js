@@ -18,13 +18,13 @@ const styles = theme => ({
     },
     smallButton: {
         margin: -10,
-        fontSize: '1.2ch',
+        fontSize: '1ch',
         justify: 'center',
         alignItems: 'center',
     },
     button: {
         margin: -10,
-        fontSize: '4.6ch',
+        fontSize: '2.4ch',
         justify: 'center',
         alignItems: 'center',
     }
@@ -39,7 +39,7 @@ class NameCard extends React.Component {
                 {data.cname}
             </Button>
             <Button size='small' className={classes.smallButton} onClick={this.onSelect.bind(this, data)} disabled={disabled}>
-                {data.first + "," + data.last}
+                {data.last + "," + data.first}
             </Button>
         </Paper>);
     }

@@ -28,6 +28,7 @@ import Slide from '@material-ui/core/Slide';
 
 import Disconnected from '@material-ui/icons/PortableWifiOff';
 import Connected from '@material-ui/icons/Wifi';
+import Keyboard from '@material-ui/icons/Keyboard';
 
 import ScrollPaper from './gridlist';
 import Admin from './admin';
@@ -73,12 +74,9 @@ const styles = theme => ({
   },
 });
 
-const options = ['Admin'];
-
 class SimpleTabs extends React.Component {
   constructor(props) {
     super(props);
-    this.divref = React.createRef()
 
     this.state = {
       data: [],
@@ -89,6 +87,7 @@ class SimpleTabs extends React.Component {
       filter: n => true,
       anchorEl: null,
       expand: true,
+      focused: false,
       cellHeight: 48,
     };
   }
@@ -107,14 +106,6 @@ class SimpleTabs extends React.Component {
       });
     }
   }
-
-  handleClick = event => {
-    this.setState({ anchorEl: event.currentTarget });
-  };
-
-  handleClose = (evt, data) => {
-    this.setState({ value: 2, anchorEl: null });
-  };
 
   componentWillUnmount() {
     if (this._subscriptions) {
@@ -148,10 +139,24 @@ class SimpleTabs extends React.Component {
           this.setState(this.state)
         }
       }
+    }),
+    postal.subscribe({
+      channel: "event",
+      topic: "key",
+      callback: e => {
+        if (e.key) {
+          if (e.key === '^a') {
+            this.setState({ value: 2 });
+          } else if (e.key === 'Escape') {
+            this.setState({ filter: d => true, expand: !this.state.expand, quicklist: this.state.expand ? this._ql : [] });
+          } else {
+            this.setState({ filter: d => d.family && d.family.startsWith(e.key.toUpperCase()) });
+          }
+        } else {
+          this.setState({ focused: e.focused })
+        }
+      }
     })];
-
-    const fs = window.getComputedStyle(this.divref.current, null).getPropertyValue("font-size");
-    this.setState({cellHeight: Number(fs.slice(0, -2)) * 4})
   }
 
   render() {
@@ -171,42 +176,12 @@ class SimpleTabs extends React.Component {
                   簽到
               </Badge>} />
             </Tabs>
-            <div ref={this.divref} className={classes.row}>
-              <Avatar className={classes.purpleAvatar} onClick={this._click.bind(this, '')}>{this.state.expand ? '<' : '>'}</Avatar>
-              {
-                this.state.quicklist.map((a, i) =>
-                  <Avatar key={i} className={classes.purpleAvatar} onClick={this._click.bind(this, a)}>{a}</Avatar>)
-              }
-            </div>
+            <IconButton color={this.state.focused ? "inherit" : "black"}>
+              <Keyboard />
+            </IconButton>
             <IconButton onClick={this.handleConnectionClick} color="inherit">
               {this.state.connected ? <Connected /> : <Disconnected />}
             </IconButton>
-            <IconButton
-              aria-label="More"
-              aria-owns={anchorEl ? 'long-menu' : null}
-              aria-haspopup="true"
-              onClick={this.handleClick}
-              color="inherit"
-            >
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id="long-menu"
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              PaperProps={{
-                style: {
-                  maxHeight: 48 * 4.5,
-                  width: 200,
-                },
-              }}
-            >
-              {options.map(option =>
-                <MenuItem key={option} selected={false} onClick={() => this.handleClose(option)}>
-                  {option}
-                </MenuItem>
-              )}
-            </Menu>
           </Toolbar>
         </AppBar>
         {value === 0 &&
@@ -239,14 +214,6 @@ class SimpleTabs extends React.Component {
           </Dialog>}
       </div>
     );
-  }
-
-  _click(a) {
-    if (a.length > 0) {
-      this.setState({ filter: d => d.family && d.family.startsWith(a) });
-    } else {
-      this.setState({ filter: d => true, expand: !this.state.expand, quicklist: this.state.expand ? this._ql : [] });
-    }
   }
 }
 
